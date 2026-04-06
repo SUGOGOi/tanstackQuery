@@ -1,14 +1,22 @@
 
 
-import { useQuery } from '@tanstack/react-query';
-import { fetchPostsRQ } from '../API/api';
+import { keepPreviousData, useQuery } from '@tanstack/react-query';
+import { fetchPostsRQPagination } from '../API/api';
+import { NavLink } from 'react-router-dom';
+import { useState } from 'react';
 
 const FetchRQ = () => {
+    const [pageNumber, setPageNumber] = useState(0)
 
 
     const { data, isLoading, isError, error } = useQuery({
-        queryKey: ['posts'], //like useState
-        queryFn: fetchPostsRQ //like useEffect
+        queryKey: ['posts', pageNumber], //like useState
+        queryFn: () => fetchPostsRQPagination(pageNumber), //like useEffect
+        // gcTime: 1000 //cache remain for 1 min
+        // staleTime: 10000,
+        // refetchInterval: 1000,
+        // refetchIntervalInBackground: true,
+        placeholderData: keepPreviousData
     })
 
     // console.log(data)
@@ -38,7 +46,8 @@ const FetchRQ = () => {
 
             <div className="divide-y divide-gray-900">
                 {data && data?.map((post) => (
-                    <div
+                    <NavLink
+                        to={`/rq/${post.id}`}
                         key={post.id}
                         className="group py-6 flex flex-col md:flex-row md:items-baseline gap-4 transition-colors hover:bg-white/[0.02] px-2 -mx-2 rounded-sm"
                     >
@@ -63,8 +72,37 @@ const FetchRQ = () => {
                                 View
                             </button>
                         </div> */}
-                    </div>
+                    </NavLink>
                 ))}
+            </div>
+
+
+            <div className="flex items-center justify-center gap-8 py-12 mt-8 border-t border-gray-900">
+                {/* Prev Button */}
+                <button
+                    disabled={pageNumber === 0}
+                    onClick={() => setPageNumber((prev) => prev - 3)}
+                    className="group flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.2em] text-gray-500 hover:text-indigo-400 disabled:opacity-20 disabled:hover:text-gray-500 transition-all"
+                >
+                    <span className="group-hover:-translate-x-1 transition-transform">←</span> Prev
+                </button>
+
+                {/* Page Indicator */}
+                <div className="flex items-center gap-3">
+                    <span className="h-[1px] w-4 bg-gray-800"></span>
+                    <p className="text-xs font-mono text-gray-400">
+                        Page <span className="text-indigo-500">{pageNumber / 3 + 1}</span>
+                    </p>
+                    <span className="h-[1px] w-4 bg-gray-800"></span>
+                </div>
+
+                {/* Next Button */}
+                <button
+                    onClick={() => setPageNumber((prev) => prev + 3)}
+                    className="group flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.2em] text-gray-500 hover:text-indigo-400 transition-all"
+                >
+                    Next <span className="group-hover:translate-x-1 transition-transform">→</span>
+                </button>
             </div>
         </section>
     );
