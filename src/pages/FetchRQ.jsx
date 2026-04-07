@@ -63,7 +63,7 @@ const FetchRQ = () => {
         <section className="max-w-3xl mx-auto">
             <header className="mb-12">
                 <h1 className="text-xl font-medium text-white tracking-tight">Posts</h1>
-                <p className="text-sm text-gray-500">Tanstack Query/React Query state management.</p>
+                <p className="text-sm text-gray-500">Tanstack Query fetching & state management.</p>
             </header>
 
             <div className="divide-y divide-gray-900">

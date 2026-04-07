@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from "react";
 const links = [
     { to: "/", label: "Home" },
     { to: "/trad", label: "Traditional" },
-    { to: "/rq", label: "ReactQuery" },
+    { to: "/rq", label: "TanstackQuery" },
     { to: "/infinite", label: "Infinite Scroll" },
 ];
 
