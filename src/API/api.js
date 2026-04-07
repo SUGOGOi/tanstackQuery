@@ -23,3 +23,20 @@ export const fetchPostsRQPagination = async (pageNumber) => {
   const res = await api.get(`/posts?_start=${pageNumber}&_limit=3`);
   return res.status === 200 ? res.data : [];
 };
+
+export const deletePost = (id) => {
+  return api.delete(`/posts/${id}`);
+};
+
+export const updatePost = (id) => {
+  return api.patch(`/posts/${id}`, { title: "Title updated!" });
+};
+
+export const fetchUsers = async ({ pageParam = 1 }) => {
+  console.log(pageParam);
+  const res = await api.get(
+    `https://api.github.com/users?per_page=10&page=${pageParam}`
+  );
+
+  return res.data;
+};

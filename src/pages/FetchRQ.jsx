@@ -1,25 +1,47 @@
-
-
-import { keepPreviousData, useQuery } from '@tanstack/react-query';
-import { fetchPostsRQPagination } from '../API/api';
+import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { deletePost, fetchPostsRQPagination, updatePost } from '../API/api';
 import { NavLink } from 'react-router-dom';
 import { useState } from 'react';
+import { toast } from "react-hot-toast"
 
 const FetchRQ = () => {
-    const [pageNumber, setPageNumber] = useState(0)
-
+    const [pageNumber, setPageNumber] = useState(0);
 
     const { data, isLoading, isError, error } = useQuery({
-        queryKey: ['posts', pageNumber], //like useState
-        queryFn: () => fetchPostsRQPagination(pageNumber), //like useEffect
-        // gcTime: 1000 //cache remain for 1 min
-        // staleTime: 10000,
-        // refetchInterval: 1000,
-        // refetchIntervalInBackground: true,
+        queryKey: ['posts', pageNumber],
+        queryFn: () => fetchPostsRQPagination(pageNumber),
         placeholderData: keepPreviousData
+    });
+
+    const queryClient = useQueryClient()
+
+    // Placeholder handlers for actions
+    const updateMutation = useMutation({
+        mutationFn: (id) => updatePost(id),
+        onSuccess: (data, id) => {
+            queryClient.setQueryData(['posts', pageNumber], (postsData) => {
+                return postsData?.map((curPost) => {
+                    return curPost.id === id ? { ...curPost, title: data.data.title } : curPost;
+                })
+            })
+
+            toast.success("Post updated!")
+
+            // console.log(data, id)
+        }
     })
 
-    // console.log(data)
+    const deleteMutation = useMutation({
+        mutationFn: (id) => deletePost(id),
+        onSuccess: (data, id) => {
+            queryClient.setQueryData(['posts', pageNumber], (curElem) => {
+                return curElem?.filter((post) => post.id != id)
+            })
+
+
+            toast.success("Post deleted!")
+        }
+    })
 
     if (isLoading) {
         return (
@@ -46,39 +68,47 @@ const FetchRQ = () => {
 
             <div className="divide-y divide-gray-900">
                 {data && data?.map((post) => (
-                    <NavLink
-                        to={`/rq/${post.id}`}
+                    <div
+
                         key={post.id}
-                        className="group py-6 flex flex-col md:flex-row md:items-baseline gap-4 transition-colors hover:bg-white/[0.02] px-2 -mx-2 rounded-sm"
+                        className="group py-6 flex flex-col md:flex-row md:items-center gap-4 transition-colors hover:bg-white/[0.02] px-2 -mx-2 rounded-sm"
                     >
-                        {/* ID - Fixed width for alignment */}
+                        {/* ID */}
                         <span className="text-xs font-mono text-gray-600 w-8 shrink-0">
                             {String(post.id).padStart(2, '0')}
                         </span>
 
                         {/* Content */}
-                        <div className="flex-grow">
-                            <h2 className="text-gray-200 group-hover:text-indigo-400 transition-colors duration-300 font-medium">
+                        <div className="flex-grow min-w-0">
+                            <NavLink to={`/rq/${post.id}`} className="text-gray-200 group-hover:text-indigo-400 transition-colors duration-300 font-medium truncate">
                                 {post.title}
-                            </h2>
+                            </NavLink>
                             <p className="text-sm text-gray-500 mt-1 line-clamp-1 group-hover:text-gray-400">
                                 {post.body}
                             </p>
                         </div>
 
-                        {/* Action - Only visible on hover or mobile */}
-                        {/* <div className="md:opacity-0 group-hover:opacity-100 transition-opacity">
-                            <button className="text-[10px] uppercase tracking-widest text-gray-500 hover:text-white">
-                                View
+                        {/* Actions - Visible on Hover */}
+                        <div className="flex gap-3 ">
+                            <button
+                                onClick={() => updateMutation.mutate(post.id)}
+                                className="text-[10px] uppercase tracking-widest text-emerald-500 hover:text-emerald-400 font-bold cursor-pointer"
+                            >
+                                Update
                             </button>
-                        </div> */}
-                    </NavLink>
+                            <button
+                                onClick={() => deleteMutation.mutate(post.id)}
+                                className="text-[10px] uppercase tracking-widest text-red-500 hover:text-red-400 font-bold cursor-pointer"
+                            >
+                                Delete
+                            </button>
+                        </div>
+                    </div>
                 ))}
             </div>
 
-
+            {/* Pagination Section */}
             <div className="flex items-center justify-center gap-8 py-12 mt-8 border-t border-gray-900">
-                {/* Prev Button */}
                 <button
                     disabled={pageNumber === 0}
                     onClick={() => setPageNumber((prev) => prev - 3)}
@@ -87,7 +117,6 @@ const FetchRQ = () => {
                     <span className="group-hover:-translate-x-1 transition-transform">←</span> Prev
                 </button>
 
-                {/* Page Indicator */}
                 <div className="flex items-center gap-3">
                     <span className="h-[1px] w-4 bg-gray-800"></span>
                     <p className="text-xs font-mono text-gray-400">
@@ -96,7 +125,6 @@ const FetchRQ = () => {
                     <span className="h-[1px] w-4 bg-gray-800"></span>
                 </div>
 
-                {/* Next Button */}
                 <button
                     onClick={() => setPageNumber((prev) => prev + 3)}
                     className="group flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.2em] text-gray-500 hover:text-indigo-400 transition-all"

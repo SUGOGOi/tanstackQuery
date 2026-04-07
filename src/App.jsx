@@ -10,6 +10,7 @@ import FetchOld from "./pages/FetchOld";
 import InfiniteScroll from "./pages/InfiniteScroll"
 import FetchIndv from "./components/ui/FetchIndv"
 import { MainLayout } from "./components/layout/MainLayout"
+import { Toaster } from "react-hot-toast";
 
 
 // Create a router
@@ -49,6 +50,28 @@ const App = () => {
     <QueryClientProvider client={queryClient}>
       <RouterProvider router={router}></RouterProvider>
       <ReactQueryDevtools initialIsOpen={false} />
+
+      <Toaster
+        toastOptions={{
+          style: {
+            background: '#111', // Matches your card background
+            color: '#fff',
+            border: '1px solid #1f2937', // border-gray-800
+            fontSize: '12px',
+            letterSpacing: '0.05em',
+            borderRadius: '4px',
+            fontFamily: 'monospace',
+          },
+          success: {
+            iconTheme: {
+              primary: '#6366f1', // Indigo-500
+              secondary: '#111',
+            },
+          },
+        }}
+
+        position="top-center"
+      />
     </QueryClientProvider>
   );
 };
