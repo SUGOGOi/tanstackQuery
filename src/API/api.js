@@ -40,3 +40,10 @@ export const fetchUsers = async ({ pageParam = 1 }) => {
 
   return res.data;
 };
+
+export const fetchPostInfinite = async ({ pageParam = 0 }) => {
+  console.log(pageParam);
+  const res = await api.get(`/posts?_start=${pageParam}&_limit=10`);
+
+  return res.status === 200 ? res.data : [];
+};
